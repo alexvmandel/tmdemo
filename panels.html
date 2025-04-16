@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVF Telemarketing Interface - Final</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            background-color: #1a3a5f;
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .logo span {
+            color: #2ac1ae;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-name {
+            margin-right: 15px;
+        }
+        
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #2ac1ae;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* Call Status Bar */
+        .call-status {
+            background-color: #f8f9fa;
+            border: 2px solid #28a745;
+            border-radius: 4px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .call-timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a3a5f;
+        }
+        
+        .call-controls button {
+            padding: 8px 15px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .end-call {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .hold {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .schedule {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .complete {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        /* Main Content */
+        .content {
+            display: flex;
+            gap: 20px;
+        }
+        
+        /* Left Panel */
+        .customer-panel {
+            flex: 1;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .customer-header {
+            background-color: #1a3a5f;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .customer-info {
+            padding: 15px;
+        }
+        
+        .profile {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .customer-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: #1a3a5f;
+            margin-right: 15px;
+        }
+        
+        .customer-details h2 {
+            font-size: 20px;
+            color: #1a3a5f;
+            margin-bottom: 5px;
+        }
+        
+        .position, .company {
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .badge {
+            display: inline-block;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .contact-list {
+            margin-bottom: 20px;
+        }
+        
+        .contact-item {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .contact-item i {
+            width: 20px;
+            color: #2ac1ae;
+            margin-right: 10px;
+        }
+        
+        .contact-label {
+            width: 60px;
+            color: #666;
+        }
+        
+        .contact-value {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            color: #1a3a5f;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        /* Lead Qualification */
+        .qualification {
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .qual-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .qual-item {
+            background-color: #f5f7fa;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        
+        .qual-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .qual-value {
+            font-weight: 600;
+            color: #1a3a5f;
+        }
+        
+        .interest-level {
+            margin-bottom: 15px;
+        }
+        
+        .interest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .interest-label {
+            font-size: 14px;
+        }
+        
+        .interest-score {
+            color: #2ac1ae;
+            font-weight: bold;
+        }
+        
+        .interest-meter {
+            height: 8px;
+            background-color: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .interest-fill {
+            height: 100%;
+            width: 75%;
+            background-color: #2ac1ae;
+        }
+        
+        /* Pain Points */
+        .pain-points {
+            margin-top: 15px;
+        }
+        
+        .pain-point {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            background-color: #ffebee;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        
+        .pain-point i {
+            color: #e74c3c;
+            margin-right: 8px;
+            margin-top: 2px;
+        }
+        
+        /* Center Panel */
+        .script-panel {
+            flex: 2;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .script-header {
+            background-color: #1a3a5f;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        .stage-number {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 28px;
+            height: 28px;
+            background-color: white;
+            color: #1a3a5f;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .script-content {
+            padding: 20px;
+        }
+        
+        .script-section {
+            margin-bottom: 20px;
+        }
+        
+        .script-section h3 {
+            font-size: 16px;
+            color: #2ac1ae;
+            margin-bottom: 10px;
+        }
+        
+        .script-text {
+            background-color: #f3f9ff;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 3px solid #3498db;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .response-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .response-option {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .response-option:hover {
+            background-color: #f5f7fa;
+            border-color: #aaa;
+        }
+        
+        .objection-section h3 {
+            font-size: 16px;
+            color: #e67e22;
+            margin-bottom: 10px;
+        }
+        
+        .objection-container {
+            margin-bottom: 10px;
+        }
+        
+        .objection-header {
+            background-color: #fff5e6;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid #e67e22;
+        }
+        
+        .objection-content {
+            padding: 15px;
+            border: 1px solid #eee;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            display: none;
+        }
+        
+        .objection-content.active {
+            display: block;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .nav-button {
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        
+        .prev-button {
+            background-color: white;
+            border: 1px solid #1a3a5f;
+            color: #1a3a5f;
+        }
+        
+        .prev-button i {
+            margin-right: 8px;
+        }
+        
+        .next-button {
+            background-color: #1a3a5f;
+            border: 1px solid #1a3a5f;
+            color: white;
+        }
+        
+        .next-button i {
+            margin-left: 8px;
+        }
+        
+        /* Right Panel */
+        .info-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .product-panel, .questions-panel {
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            background-color: #1a3a5f;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .product-content, .questions-content {
+            padding: 15px;
+        }
+        
+        .product {
+            margin-bottom: 15px;
+        }
+        
+        .product-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1a3a5f;
+            margin-bottom: 5px;
+        }
+        
+        .product-price {
+            font-size: 18px;
+            color: #2ac1ae;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .features {
+            margin-bottom: 10px;
+        }
+        
+        .feature {
+            display: flex;
+            margin-bottom: 5px;
+        }
+        
+        .feature i {
+            color: #2ecc71;
+            margin-right: 8px;
+            width: 16px;
+        }
+        
+        .product-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .recommend-btn {
+            flex: 1;
+            background-color: #2ac1ae;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .details-btn {
+            flex: 1;
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        /* Qualification Questions */
+        .question-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .question-item:last-child {
+            border-bottom: none;
+        }
+        
+        .question-text {
+            margin-bottom: 10px;
+            font-weight: 500;
+            display: flex;
+        }
+        
+        .question-number {
+            margin-right: 8px;
+            color: #1a3a5f;
+            font-weight: bold;
+        }
+        
+        .radio-options {
+            margin-left: 25px;
+        }
+        
+        .radio-option {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .radio-option input[type="radio"] {
+            margin-right: 10px;
+        }
+        
+        .radio-option label {
+            cursor: pointer;
+        }
+        
+        /* Notes Section */
+        .notes-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .notes-title {
+            font-size: 16px;
+            color: #1a3a5f;
+            margin-bottom: 10px;
+        }
+        
+        .notes-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .save-btn {
+            background-color: #1a3a5f;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            float: right;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-container">
+            <div class="logo">MVF<span>CRM</span></div>
+            <div class="user-info">
+                <div class="user-name">Sara Johnson</div>
+                <div class="avatar">SJ</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Call Status Bar -->
+        <div class="call-status">
+            <div class="call-timer">Call Duration: 04:01</div>
+            <div class="call-controls">
+                <button class="end-call">End Call</button>
+                <button class="hold">Hold</button>
+                <button class="schedule">Schedule Callback</button>
+                <button class="complete">Complete Sale</button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Left Panel: Customer Info -->
+            <div class="customer-panel">
+                <div class="customer-header">
+                    Customer Information
+                </div>
+                
+                <div class="customer-info">
+                    <div class="profile">
+                        <div class="customer-avatar">AM</div>
+                        <div class="customer-details">
+                            <h2>Alex Morgan</h2>
+                            <div class="position">Director of Operations</div>
+                            <div class="company">Summit Properties</div>
+                            <div class="badge">
+                                <i class="fas fa-check-circle"></i>
+                                Decision Maker
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-list">
+                        <div class="section-title">Contact Details</div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <div class="contact-label">Phone:</div>
+                            <div class="contact-value">(555) 987-6543</div>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <div class="contact-label">Email:</div>
+                            <div class="contact-value">alex@summitproperties.co</div>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div class="contact-label">Address:</div>
+                            <div class="contact-value">742 Evergreen Terrace, Portland, OR</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="qualification">
+                    <div class="section-title">Lead Qualification</div>
+                    <div class="qual-grid">
+                        <div class="qual-item">
+                            <div class="qual-label">Industry</div>
+                            <div class="qual-value">Real Estate</div>
+                        </div>
+                        <div class="qual-item">
+                            <div class="qual-label">Company Size</div>
+                            <div class="qual-value">11-50</div>
+                        </div>
+                        <div class="qual-item">
+                            <div class="qual-label">Budget</div>
+                            <div class="qual-value">$1,000-1,500/mo</div>
+                        </div>
+                        <div class="qual-item">
+                            <div class="qual-label">Timeline</div>
+                            <div class="qual-value">1-2 months</div>
+                        </div>
+                    </div>
+                    
+                    <div class="interest-level">
+                        <div class="interest-header">
+                            <div class="interest-label">Interest Level:</div>
+                            <div class="interest-score">High (75%)</div>
+                        </div>
+                        <div class="interest-meter">
+                            <div class="interest-fill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="pain-points">
+                        <div class="section-title">Key Pain Points</div>
+                        <div class="pain-point">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <div>Customer data scattered across multiple platforms</div>
+                        </div>
+                        <div class="pain-point">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <div>Difficulty tracking follow-ups with potential buyers</div>
+                        </div>
+                        <div class="pain-point">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <div>Poor integration with existing marketing tools</div>
+                        </div>
+                        <div class="pain-point">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <div>Team members can't easily share client information</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Center Panel: Call Script -->
+            <div class="script-panel">
+                <div class="script-header">
+                    <div class="stage-number">3</div>
+                    Solution Pitch
+                </div>
+                
+                <div class="script-content">
+                    <div class="script-section">
+                        <h3>Recommended Script</h3>
+                        <div class="script-text">
+                            "Based on what you've shared about your challenges with scattered data and follow-up tracking, our RealEstate Pro CRM would be perfect for your team. It was designed specifically for brokerages like yours, with 11-50 agents.
+                            <br><br>
+                            Looking at the pain points you mentioned, here's how our solution addresses each one:
+                            <br><br>
+                            • For your scattered data issue, we provide centralized contact management that eliminates those data silos you're experiencing.
+                            <br><br>
+                            • To solve the follow-up problems, our system includes automated reminders and task workflows to ensure no lead falls through the cracks.
+                            <br><br>
+                            • We have seamless integration with all major marketing platforms, which solves that integration challenge.
+                            <br><br>
+                            • And for team collaboration, we've built in permission-based sharing that makes it easy for team members to access the information they need while maintaining security.
+                            <br><br>
+                            Our clients typically see a 30% increase in lead conversion within the first 3 months of implementation. Does this sound like it would address the major challenges you're facing?"
+                        </div>
+                    </div>
+                    
+                    <div class="response-options">
+                        <div class="response-option">Yes, sounds promising</div>
+                        <div class="response-option">Need more information</div>
+                        <div class="response-option">Concerns about implementation</div>
+                        <div class="response-option">Pricing concerns</div>
+                        <div class="response-option">Not the right fit</div>
+                    </div>
+                    
+                    <div class="objection-section">
+                        <h3>Common Objections</h3>
+                        
+                        <div class="objection-container">
+                            <div class="objection-header">
+                                <div>Pricing Concerns</div>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="objection-content">
+                                "I understand budget concerns are important. When comparing costs, it's important to look at the full ROI. Our clients typically find that the increased conversion rates and time savings more than cover the investment. Plus, we offer flexible payment plans to help manage cash flow. Would it help if I shared a case study from another brokerage similar to yours that shows their ROI breakdown?"
+                            </div>
+                        </div>
+                        
+                        <div class="objection-container">
+                            <div class="objection-header">
+                                <div>Implementation Time</div>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="objection-content">
+                                "That's a common concern. Our onboarding process is designed to be minimally disruptive. We have a dedicated implementation team that handles data migration and offers training sessions that work around your schedule. Most clients are fully operational within 2 weeks."
+                            </div>
+                        </div>
+                        
+                        <div class="objection-container">
+                            <div class="objection-header">
+                                <div>Team Adoption</div>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="objection-content">
+                                "Getting your team to adopt a new system is crucial for success. We provide a comprehensive training program with live sessions, recorded tutorials, and a dedicated success manager. Our interface is designed to be intuitive, and we create custom training materials specific to your team's workflows. Many clients report over 90% adoption rates within the first month."
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="navigation">
+                        <button class="nav-button prev-button">
+                            <i class="fas fa-arrow-left"></i>
+                            Previous: Discovery
+                        </button>
+                        <button class="nav-button next-button">
+                            Next: Objection Handling
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="notes-section">
+                        <div class="notes-title">Call Notes</div>
+                        <textarea class="notes-input" placeholder="Enter notes about the current call..."></textarea>
+                        <button class="save-btn">Save Notes</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Product Info & Questions -->
+            <div class="info-panel">
+                <!-- Product Information -->
+                <div class="product-panel">
+                    <div class="panel-header">
+                        Recommended Products
+                    </div>
+                    <div class="product-content">
+                        <div class="product">
+                            <div class="product-name">RealEstate Pro CRM</div>
+                            <div class="product-price">$89/user/month</div>
+                            <div class="features">
+                                <div class="feature">
+                                    <i class="fas fa-check"></i>
+                                    <div>Centralized contact management</div>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-check"></i>
+                                    <div>Automated follow-up reminders</div>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-check"></i>
+                                    <div>Marketing integration</div>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-check"></i>
+                                    <div>Team collaboration tools</div>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-check"></i>
+                                    <div>Mobile app</div>
+                                </div>
+                            </div>
+                            <div class="product-actions">
+                                <button class="recommend-btn">Recommend</button>
+                                <button class="details-btn">Details</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Qualification Questions -->
+                <div class="questions-panel">
+                    <div class="panel-header">
+                        Key Qualification Questions
+                    </div>
+                    <div class="questions-content">
+                        <div class="question-item">
+                            <div class="question-text">
+                                <div class="question-number">1.</div>
+                                <div>How many agents will be using the CRM on a regular basis?</div>
+                            </div>
+                            <div class="radio-options">
+                                <div class="radio-option">
+                                    <input type="radio" id="agents-small" name="agents">
+                                    <label for="agents-small">1-10 agents</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="agents-medium" name="agents" checked>
+                                    <label for="agents-medium">11-50 agents</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="agents-large" name="agents">
+                                    <label for="agents-large">50+ agents</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item">
+                            <div class="question-text">
+                                <div class="question-number">2.</div>
+                                <div>What are the most critical features you need in a CRM solution?</div>
+                            </div>
+                            <div class="radio-options">
+                                <div class="radio-option">
+                                    <input type="radio" id="feature-contact" name="feature" checked>
+                                    <label for="feature-contact">Contact Management</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="feature-automation" name="feature">
+                                    <label for="feature-automation">Automation & Workflows</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="feature-mobile" name="feature">
+                                    <label for="feature-mobile">Mobile Access</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item">
+                            <div class="question-text">
+                                <div class="question-number">3.</div>
+                                <div>What's your current budget for CRM software?</div>
+                            </div>
+                            <div class="radio-options">
+                                <div class="radio-option">
+                                    <input type="radio" id="budget-low" name="budget">
+                                    <label for="budget-low">Under $500/month</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="budget-medium" name="budget" checked>
+                                    <label for="budget-medium">$500-1,500/month</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="budget-high" name="budget">
+                                    <label for="budget-high">$1,500+/month</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item">
+                            <div class="question-text">
+                                <div class="question-number">4.</div>
+                                <div>Do you have a specific timeline for implementation?</div>
+                            </div>
+                            <div class="radio-options">
+                                <div class="radio-option">
+                                    <input type="radio" id="timeline-urgent" name="timeline">
+                                    <label for="timeline-urgent">ASAP (within 2 weeks)</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="timeline-soon" name="timeline" checked>
+                                    <label for="timeline-soon">1-2 months</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="timeline-later" name="timeline">
+                                    <label for="timeline-later">3+ months</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item">
+                            <div class="question-text">
+                                <div class="question-number">5.</div>
+                                <div>What other software tools do you currently use that would need to integrate?</div>
+                            </div>
+                            <div class="radio-options">
+                                <div class="radio-option">
+                                    <input type="radio" id="integration-email" name="integration" checked>
+                                    <label for="integration-email">Email Marketing Platform</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="integration-mls" name="integration">
+                                    <label for="integration-mls">MLS Listing Service</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="integration-multiple" name="integration">
+                                    <label for="integration-multiple">Multiple Systems</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Objection handling toggle
+        const objectionHeaders = document.querySelectorAll('.objection-header');
+        objectionHeaders.forEach(header => {
+            header.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                content.classList.toggle('active');
+                
+                const icon = this.querySelector('i');
+                if (content.classList.contains('active')) {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                } else {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                }
+            });
+        });
+        
+        // Response option selection
+        const responseOptions = document.querySelectorAll('.response-option');
+        responseOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                responseOptions.forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                // If pricing concerns selected, auto-open that objection
+                if (this.textContent === 'Pricing concerns') {
+                    document.querySelectorAll('.objection-content')[0].classList.add('active');
+                    document.querySelectorAll('.objection-header i')[0].classList.remove('fa-chevron-down');
+                    document.querySelectorAll('.objection-header i')[0].classList.add('fa-chevron-up');
+                }
+                
+                // If implementation concerns selected, auto-open that objection
+                if (this.textContent === 'Concerns about implementation') {
+                    document.querySelectorAll('.objection-content')[1].classList.add('active');
+                    document.querySelectorAll('.objection-header i')[1].classList.remove('fa-chevron-down');
+                    document.querySelectorAll('.objection-header i')[1].classList.add('fa-chevron-up');
+                }
+            });
+        });
+        
+        // Style for selected response option
+        document.querySelectorAll('.response-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.response-option').forEach(o => {
+                    o.style.backgroundColor = '';
+                    o.style.borderColor = '#ddd';
+                    o.style.color = '';
+                });
+                this.style.backgroundColor = '#1a3a5f';
+                this.style.borderColor = '#1a3a5f';
+                this.style.color = 'white';
+            });
+        });
+    </script>
+</body>
+</html>
