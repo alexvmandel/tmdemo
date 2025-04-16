@@ -1,0 +1,727 @@
+import React, { useState, useEffect } from 'react';
+
+// Card Component
+const Card = ({ card, onClick, selectable = true }) => {
+  const getSuitSymbol = (suit) => {
+    switch(suit) {
+      case 'hearts': return '♥';
+      case 'diamonds': return '♦';
+      case 'clubs': return '♣';
+      case 'spades': return '♠';
+      default: return '';
+    }
+  };
+  
+  const getDisplayValue = (value) => {
+    switch(value) {
+      case 1: return 'A';
+      case 11: return 'J';
+      case 12: return 'Q';
+      case 13: return 'K';
+      default: return value.toString();
+    }
+  };
+  
+  const color = card.suit === 'hearts' || card.suit === 'diamonds' ? 'text-red-600' : 'text-black';
+  
+  return (
+    <div 
+      className={`w-16 h-24 bg-white border border-gray-400 rounded p-1 cursor-pointer shadow-sm
+                ${card.selected ? 'ring-2 ring-yellow-400' : ''}
+                ${selectable ? 'hover:bg-gray-100' : ''}`}
+      onClick={selectable ? onClick : undefined}
+    >
+      <div className={`text-lg font-bold ${color}`}>
+        {getDisplayValue(card.value)}
+        <span className="text-xl ml-1">{getSuitSymbol(card.suit)}</span>
+      </div>
+    </div>
+  );
+};
+
+// Card Set Component
+const CardSet = ({ set, onClick, isSelected }) => {
+  return (
+    <div 
+      className={`flex flex-row gap-1 p-2 bg-green-100 rounded ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
+      onClick={onClick}
+    >
+      {set.cards.map(card => (
+        <Card key={card.id} card={card} selectable={false} />
+      ))}
+    </div>
+  );
+};
+
+// Main Game Component
+const FamilyGinRummy = () => {
+  // Game state
+  const [mainDeck, setMainDeck] = useState({ cards: [] });
+  const [scoringDeck, setScoringDeck] = useState({ cards: [] });
+  const [scoringCard, setScoringCard] = useState(null);
+  const [isDoublePoints, setIsDoublePoints] = useState(false);
+  const [discardPile, setDiscardPile] = useState([]);
+  const [players, setPlayers] = useState([
+    { id: 0, hand: [], name: "Player 1 (Dealer)" },
+    { id: 1, hand: [], name: "Player 2" }
+  ]);
+  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(1); // Opponent starts
+  const [sets, setSets] = useState([]);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [selectedSetId, setSelectedSetId] = useState(null);
+  const [message, setMessage] = useState("Welcome to Family Gin Rummy! Click 'New Game' to start.");
+  const [hasDrawn, setHasDrawn] = useState(false);
+  
+  // Initialize decks - one for gameplay and one for scoring
+  const initializeDecks = () => {
+    const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+    const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+    let id = 0;
+    
+    // Create main gameplay deck (two full decks)
+    let newMainDeck = { cards: [] };
+    for (let d = 0; d < 2; d++) {
+      for (let suit of suits) {
+        for (let value of values) {
+          newMainDeck.cards.push({ suit, value, id: id++, selected: false });
+        }
+      }
+    }
+    
+    // Create separate scoring deck (one full deck)
+    let newScoringDeck = { cards: [] };
+    for (let suit of suits) {
+      for (let value of values) {
+        newScoringDeck.cards.push({ suit, value, id: id++, selected: false });
+      }
+    }
+    
+    // Shuffle both decks
+    const shuffleDeck = (deck) => {
+      for (let i = deck.cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck.cards[i], deck.cards[j]] = [deck.cards[j], deck.cards[i]];
+      }
+    };
+    
+    shuffleDeck(newMainDeck);
+    shuffleDeck(newScoringDeck);
+    
+    return { mainDeck: newMainDeck, scoringDeck: newScoringDeck };
+  };
+  
+  // Draw a card from the main deck
+  const drawCard = () => {
+    if (mainDeck.cards.length === 0) return null;
+    
+    const newDeck = { ...mainDeck };
+    const card = newDeck.cards.pop();
+    setMainDeck(newDeck);
+    
+    return card;
+  };
+  
+  // Start a new game
+  const startNewGame = () => {
+    const { mainDeck: newMainDeck, scoringDeck: newScoringDeck } = initializeDecks();
+    setMainDeck(newMainDeck);
+    setScoringDeck(newScoringDeck);
+    setDiscardPile([]);
+    
+    // Reset players
+    const newPlayers = [
+      { id: 0, hand: [], name: "Player 1 (Dealer)" },
+      { id: 1, hand: [], name: "Player 2" }
+    ];
+    
+    // Deal 10 cards to dealer (Player 1)
+    for (let i = 0; i < 10; i++) {
+      const card = newMainDeck.cards.pop();
+      newPlayers[0].hand.push(card);
+    }
+    
+    // Deal 11 cards to opponent (Player 2)
+    for (let i = 0; i < 11; i++) {
+      const card = newMainDeck.cards.pop();
+      newPlayers[1].hand.push(card);
+    }
+    
+    // Draw scoring card from scoring deck
+    const scoringCard = newScoringDeck.cards.pop();
+    setScoringCard(scoringCard);
+    
+    // Determine if it's double points (you can define your own rule here)
+    // For example, let's say face cards (J, Q, K) mean double points
+    const isDouble = scoringCard.value >= 11;
+    setIsDoublePoints(isDouble);
+    
+    setPlayers(newPlayers);
+    setMainDeck(newMainDeck);
+    setScoringDeck(newScoringDeck);
+    setDiscardPile([]);
+    setCurrentPlayerIndex(1); // Opponent starts
+    setSets([]);
+    setGameStarted(true);
+    setHasDrawn(false);
+    setMessage("Game started. Player 2 starts by discarding a card.");
+  };
+  
+  // Handle card selection in player's hand
+  const toggleCardSelection = (cardId) => {
+    if (!gameStarted || currentPlayerIndex !== 0) return;
+    
+    setPlayers(prevPlayers => {
+      const newPlayers = [...prevPlayers];
+      const player = newPlayers[0];
+      const cardIndex = player.hand.findIndex(c => c.id === cardId);
+      
+      if (cardIndex !== -1) {
+        player.hand[cardIndex].selected = !player.hand[cardIndex].selected;
+      }
+      
+      return newPlayers;
+    });
+  };
+  
+  // Get selected cards from current player's hand
+  const getSelectedCards = () => {
+    return players[currentPlayerIndex].hand.filter(card => card.selected);
+  };
+  
+  // Clear card selection for current player
+  const clearSelection = () => {
+    setPlayers(prevPlayers => {
+      const newPlayers = [...prevPlayers];
+      newPlayers[currentPlayerIndex].hand.forEach(card => {
+        card.selected = false;
+      });
+      return newPlayers;
+    });
+  };
+  
+  // Draw from deck
+  const handleDrawFromDeck = () => {
+    if (!gameStarted || currentPlayerIndex !== 0 || hasDrawn) return;
+    
+    const card = drawCard();
+    if (card) {
+      setPlayers(prevPlayers => {
+        const newPlayers = [...prevPlayers];
+        newPlayers[currentPlayerIndex].hand.push(card);
+        return newPlayers;
+      });
+      
+      setHasDrawn(true);
+      setMessage("Card drawn from deck. Create a set, add to a set, or discard.");
+    } else {
+      setMessage("Deck is empty!");
+    }
+  };
+  
+  // Draw from discard pile
+  const handleDrawFromDiscard = () => {
+    if (!gameStarted || currentPlayerIndex !== 0 || hasDrawn || discardPile.length === 0) return;
+    
+    const card = discardPile[discardPile.length - 1];
+    setDiscardPile(prevPile => prevPile.slice(0, -1));
+    
+    setPlayers(prevPlayers => {
+      const newPlayers = [...prevPlayers];
+      newPlayers[currentPlayerIndex].hand.push(card);
+      return newPlayers;
+    });
+    
+    setHasDrawn(true);
+    setMessage("Card drawn from discard pile. Create a set, add to a set, or discard.");
+  };
+  
+  // Check if a set of cards is valid
+  const isValidSet = (cards) => {
+    if (cards.length < 3) return false;
+    
+    // Check if it's a set of same value
+    const isSameValue = cards.every(card => card.value === cards[0].value);
+    if (isSameValue) return true;
+    
+    // Check if it's a run in the same suit
+    if (!cards.every(card => card.suit === cards[0].suit)) return false;
+    
+    // Handle special Ace cases in runs
+    const containsAce = cards.some(card => card.value === 1);
+    
+    // Sort cards by value for run checking
+    const sortedCards = [...cards].sort((a, b) => a.value - b.value);
+    
+    // Check for standard run
+    let isStandardRun = true;
+    for (let i = 1; i < sortedCards.length; i++) {
+      if (sortedCards[i].value !== sortedCards[i-1].value + 1) {
+        isStandardRun = false;
+        break;
+      }
+    }
+    
+    if (isStandardRun) return true;
+    
+    // Special handling for Aces in runs
+    if (containsAce) {
+      // Check if Ace works as high card (after King)
+      // Remove Ace and add a temporary card with value 14 (after King)
+      const aceCard = cards.find(card => card.value === 1);
+      const highAceCards = [...cards.filter(card => card.value !== 1), 
+                          {...aceCard, value: 14}];
+      const sortedHighAceCards = [...highAceCards].sort((a, b) => a.value - b.value);
+      
+      let isHighAceRun = true;
+      for (let i = 1; i < sortedHighAceCards.length; i++) {
+        if (sortedHighAceCards[i].value !== sortedHighAceCards[i-1].value + 1) {
+          isHighAceRun = false;
+          break;
+        }
+      }
+      
+      if (isHighAceRun) return true;
+      
+      // Check for special case like Q, K, A, 2, 3
+      if (cards.length >= 5) {
+        // Extract values and sort them
+        const values = cards.map(card => card.value).sort((a, b) => a - b);
+        
+        // Check if we have an Ace (1), a 2, a 3, a Queen (12), and a King (13)
+        const hasRequiredCards = 
+          values.includes(1) && 
+          values.includes(2) && 
+          values.includes(3) && 
+          values.includes(12) && 
+          values.includes(13);
+        
+        if (hasRequiredCards) {
+          // Check if the remaining cards (if any) form a continuous sequence
+          const remainingValues = values.filter(v => ![1, 2, 3, 12, 13].includes(v));
+          
+          if (remainingValues.length === 0) return true;
+          
+          // Check if remaining values form a continuous sequence
+          const sortedRemaining = [...remainingValues].sort((a, b) => a - b);
+          let isRemainingRun = true;
+          
+          // Check if remaining values connect to 3 or 12
+          const connectsToLow = sortedRemaining[0] === 4;
+          const connectsToHigh = sortedRemaining[sortedRemaining.length - 1] === 11;
+          
+          for (let i = 1; i < sortedRemaining.length; i++) {
+            if (sortedRemaining[i] !== sortedRemaining[i-1] + 1) {
+              isRemainingRun = false;
+              break;
+            }
+          }
+          
+          if (isRemainingRun && (connectsToLow || connectsToHigh)) {
+            return true;
+          }
+        }
+      }
+    }
+    
+    return false;
+  };
+  
+  // Create a new set from selected cards
+  const handleCreateSet = () => {
+    if (!gameStarted || currentPlayerIndex !== 0 || !hasDrawn) return;
+    
+    const selectedCards = getSelectedCards();
+    if (selectedCards.length < 3) {
+      setMessage("Select at least 3 cards to create a set.");
+      return;
+    }
+    
+    if (isValidSet(selectedCards)) {
+      // Remove selected cards from player's hand
+      setPlayers(prevPlayers => {
+        const newPlayers = [...prevPlayers];
+        newPlayers[currentPlayerIndex].hand = newPlayers[currentPlayerIndex].hand
+          .filter(card => !card.selected);
+        return newPlayers;
+      });
+      
+      // Add to sets
+      setSets(prevSets => [
+        ...prevSets, 
+        { id: Date.now(), cards: selectedCards }
+      ]);
+      
+      clearSelection();
+      setMessage("Set created successfully!");
+    } else {
+      setMessage("Invalid set! Must be 3+ cards of same value or a run in the same suit.");
+    }
+  };
+  
+  // Check if a card can be added to a set
+  const canAddToSet = (set, card) => {
+    // For sets of same value
+    if (set.cards.every(c => c.value === set.cards[0].value)) {
+      return card.value === set.cards[0].value;
+    }
+    
+    // For runs in the same suit
+    if (set.cards.every(c => c.suit === set.cards[0].suit)) {
+      // Card must be same suit
+      if (card.suit !== set.cards[0].suit) return false;
+      
+      // Find min and max values in the set
+      const values = set.cards.map(c => c.value);
+      const minValue = Math.min(...values);
+      const maxValue = Math.max(...values);
+      
+      // Handle standard run extensions
+      if (card.value === minValue - 1 || card.value === maxValue + 1) {
+        return true;
+      }
+      
+      // Special Ace handling
+      if (card.value === 1) { // Adding an Ace
+        // Can add Ace to King (Ace high)
+        if (maxValue === 13) return true;
+        
+        // Can add Ace to 2 (Ace low)
+        if (minValue === 2) return true;
+      } else if (card.value === 2 && set.cards.some(c => c.value === 1)) {
+        // Adding 2 to an Ace
+        return true;
+      } else if (card.value === 13 && set.cards.some(c => c.value === 1)) {
+        // Adding King to an Ace
+        return true;
+      }
+    }
+    
+    return false;
+  };
+  
+  // Add selected cards to a set
+  const handleAddToSet = () => {
+    if (!gameStarted || currentPlayerIndex !== 0 || !hasDrawn || selectedSetId === null) return;
+    
+    const selectedCards = getSelectedCards();
+    if (selectedCards.length === 0) {
+      setMessage("Select cards to add to the set.");
+      return;
+    }
+    
+    const targetSet = sets.find(set => set.id === selectedSetId);
+    if (!targetSet) {
+      setMessage("Selected set not found.");
+      return;
+    }
+    
+    // Check if all selected cards can be added to the set
+    const allCardsValid = selectedCards.every(card => canAddToSet(targetSet, card));
+    
+    if (allCardsValid) {
+      // Remove selected cards from player's hand
+      setPlayers(prevPlayers => {
+        const newPlayers = [...prevPlayers];
+        newPlayers[currentPlayerIndex].hand = newPlayers[currentPlayerIndex].hand
+          .filter(card => !card.selected);
+        return newPlayers;
+      });
+      
+      // Add to the set
+      setSets(prevSets => {
+        return prevSets.map(set => {
+          if (set.id === selectedSetId) {
+            return { ...set, cards: [...set.cards, ...selectedCards] };
+          }
+          return set;
+        });
+      });
+      
+      clearSelection();
+      setSelectedSetId(null);
+      setMessage("Cards added to set successfully!");
+    } else {
+      setMessage("One or more selected cards cannot be added to this set.");
+    }
+  };
+  
+  // Discard a card and end turn
+  const handleDiscard = () => {
+    if (!gameStarted || currentPlayerIndex !== 0 || !hasDrawn) return;
+    
+    const selectedCards = getSelectedCards();
+    if (selectedCards.length !== 1) {
+      setMessage("Select exactly one card to discard.");
+      return;
+    }
+    
+    const cardToDiscard = selectedCards[0];
+    
+    // Remove from player's hand
+    setPlayers(prevPlayers => {
+      const newPlayers = [...prevPlayers];
+      newPlayers[currentPlayerIndex].hand = newPlayers[currentPlayerIndex].hand
+        .filter(card => !card.selected);
+      return newPlayers;
+    });
+    
+    // Add to discard pile
+    setDiscardPile(prevPile => [...prevPile, cardToDiscard]);
+    
+    // Check for win condition
+    if (players[currentPlayerIndex].hand.length === 1) { // 1 because we haven't updated state yet
+      setMessage(`Player ${currentPlayerIndex + 1} wins! (${isDoublePoints ? "Double" : "Single"} points)`);
+      setGameStarted(false);
+    } else {
+      // Switch to next player
+      setCurrentPlayerIndex(1);
+      clearSelection();
+      setHasDrawn(false);
+      setMessage("Player 2's turn.");
+      
+      // AI move on next render
+      setTimeout(aiTurn, 1000);
+    }
+  };
+  
+  // Simple AI turn
+  const aiTurn = () => {
+    if (currentPlayerIndex !== 1 || !gameStarted) return;
+    
+    // First turn is special - AI just discards a card
+    if (discardPile.length === 0) {
+      setTimeout(() => {
+        const randomIndex = Math.floor(Math.random() * players[1].hand.length);
+        const discardCard = players[1].hand[randomIndex];
+        
+        setPlayers(prevPlayers => {
+          const newPlayers = [...prevPlayers];
+          newPlayers[1].hand = newPlayers[1].hand.filter(c => c.id !== discardCard.id);
+          return newPlayers;
+        });
+        
+        setDiscardPile(prevPile => [...prevPile, discardCard]);
+        setCurrentPlayerIndex(0);
+        setHasDrawn(false);
+        setMessage("Player 2 discarded. Your turn now!");
+      }, 500);
+      return;
+    }
+    
+    // Regular AI turn - first draw a card
+    // 70% chance to draw from deck, 30% from discard pile
+    const drawFromDeck = Math.random() < 0.7 || discardPile.length === 0;
+    
+    if (drawFromDeck) {
+      // AI draws a card from deck
+      const card = drawCard();
+      if (card) {
+        setPlayers(prevPlayers => {
+          const newPlayers = [...prevPlayers];
+          newPlayers[1].hand.push(card);
+          return newPlayers;
+        });
+        
+        // AI randomly picks a card to discard
+        setTimeout(() => {
+          const randomIndex = Math.floor(Math.random() * players[1].hand.length);
+          const discardCard = players[1].hand[randomIndex];
+          
+          setPlayers(prevPlayers => {
+            const newPlayers = [...prevPlayers];
+            newPlayers[1].hand = newPlayers[1].hand.filter(c => c.id !== discardCard.id);
+            return newPlayers;
+          });
+          
+          setDiscardPile(prevPile => [...prevPile, discardCard]);
+          
+          // Check for AI win
+          if (players[1].hand.length === 1) { // 1 because we haven't updated state yet
+            setMessage(`Player 2 wins! (${isDoublePoints ? "Double" : "Single"} points)`);
+            setGameStarted(false);
+          } else {
+            setCurrentPlayerIndex(0);
+            setHasDrawn(false);
+            setMessage("Player 2 took their turn. Your turn now!");
+          }
+        }, 500);
+      }
+    } else {
+      // AI draws from discard pile
+      const discardCard = discardPile[discardPile.length - 1];
+      setDiscardPile(prevPile => prevPile.slice(0, -1));
+      
+      setPlayers(prevPlayers => {
+        const newPlayers = [...prevPlayers];
+        newPlayers[1].hand.push(discardCard);
+        return newPlayers;
+      });
+      
+      // AI randomly picks a card to discard
+      setTimeout(() => {
+        const randomIndex = Math.floor(Math.random() * players[1].hand.length);
+        const newDiscardCard = players[1].hand[randomIndex];
+        
+        setPlayers(prevPlayers => {
+          const newPlayers = [...prevPlayers];
+          newPlayers[1].hand = newPlayers[1].hand.filter(c => c.id !== newDiscardCard.id);
+          return newPlayers;
+        });
+        
+        setDiscardPile(prevPile => [...prevPile, newDiscardCard]);
+        
+        // Check for AI win
+        if (players[1].hand.length === 1) { // 1 because we haven't updated state yet
+          setMessage(`Player 2 wins! (${isDoublePoints ? "Double" : "Single"} points)`);
+          setGameStarted(false);
+        } else {
+          setCurrentPlayerIndex(0);
+          setHasDrawn(false);
+          setMessage("Player 2 took their turn. Your turn now!");
+        }
+      }, 500);
+    }
+  };
+  
+  // Select a set to add cards to
+  const handleSelectSet = (setId) => {
+    setSelectedSetId(prev => prev === setId ? null : setId);
+  };
+  
+  return (
+    <div className="max-w-4xl mx-auto p-4 bg-gray-100 min-h-screen">
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-green-800">Family Gin Rummy</h1>
+          <div className="flex items-center gap-4">
+            {scoringCard && (
+              <div className="flex items-center gap-2">
+                <div className="bg-gray-100 p-2 rounded">
+                  <p className="text-sm font-medium">{isDoublePoints ? "Double Points" : "Single Points"}</p>
+                  <Card card={scoringCard} selectable={false} />
+                </div>
+              </div>
+            )}
+            <button 
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              onClick={startNewGame}
+            >
+              New Game
+            </button>
+          </div>
+        </div>
+        
+        {/* Game Board */}
+        <div className="mb-6">
+          {/* Deck and Discard Area */}
+          <div className="flex justify-center gap-4 mb-6">
+            <div 
+              className="w-16 h-24 bg-green-800 border-2 border-gray-400 rounded cursor-pointer flex items-center justify-center text-white"
+              onClick={handleDrawFromDeck}
+            >
+              Deck ({mainDeck?.cards?.length || 0})
+            </div>
+            <div 
+              className="w-16 h-24 bg-green-100 border-2 border-gray-400 rounded cursor-pointer flex items-center justify-center"
+              onClick={handleDrawFromDiscard}
+            >
+              {discardPile.length > 0 ? (
+                <Card card={discardPile[discardPile.length - 1]} selectable={false} />
+              ) : (
+                <span className="text-gray-500">Empty</span>
+              )}
+            </div>
+          </div>
+          
+          {/* Opponent's Hand */}
+          <div className="mb-6 p-4 bg-gray-100 rounded-lg">
+            <h2 className="text-lg font-semibold mb-2">Player 2</h2>
+            <div className="flex flex-wrap gap-2">
+              {players[1].hand.map(card => (
+                <div key={card.id} className="w-16 h-24 bg-red-800 border border-gray-400 rounded"></div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Sets Area */}
+          <div className="mb-6 p-4 bg-green-50 rounded-lg">
+            <h2 className="text-lg font-semibold mb-2">Sets on Table</h2>
+            <div className="flex flex-wrap gap-4">
+              {sets.map(set => (
+                <CardSet 
+                  key={set.id} 
+                  set={set} 
+                  isSelected={selectedSetId === set.id}
+                  onClick={() => handleSelectSet(set.id)}
+                />
+              ))}
+              {sets.length === 0 && (
+                <p className="text-gray-500">No sets yet</p>
+              )}
+            </div>
+          </div>
+          
+          {/* Player's Hand */}
+          <div className="p-4 bg-gray-100 rounded-lg">
+            <h2 className="text-lg font-semibold mb-2">Your Hand</h2>
+            <div className="flex flex-wrap gap-2">
+              {players[0].hand.map(card => (
+                <Card 
+                  key={card.id} 
+                  card={card} 
+                  onClick={() => toggleCardSelection(card.id)} 
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Game Controls */}
+        <div className="flex justify-center gap-2 mb-4">
+          <button 
+            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 disabled:bg-gray-400"
+            onClick={handleDrawFromDeck}
+            disabled={!gameStarted || currentPlayerIndex !== 0 || hasDrawn}
+          >
+            Draw (Deck)
+          </button>
+          <button 
+            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 disabled:bg-gray-400"
+            onClick={handleDrawFromDiscard}
+            disabled={!gameStarted || currentPlayerIndex !== 0 || hasDrawn || discardPile.length === 0}
+          >
+            Draw (Discard)
+          </button>
+          <button 
+            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:bg-gray-400"
+            onClick={handleCreateSet}
+            disabled={!gameStarted || currentPlayerIndex !== 0 || !hasDrawn || getSelectedCards().length < 3}
+          >
+            Create Set
+          </button>
+          <button 
+            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:bg-gray-400"
+            onClick={handleAddToSet}
+            disabled={!gameStarted || currentPlayerIndex !== 0 || !hasDrawn || getSelectedCards().length === 0 || selectedSetId === null}
+          >
+            Add to Set
+          </button>
+          <button 
+            className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 disabled:bg-gray-400"
+            onClick={handleDiscard}
+            disabled={!gameStarted || currentPlayerIndex !== 0 || !hasDrawn || getSelectedCards().length !== 1}
+          >
+            Discard
+          </button>
+        </div>
+        
+        {/* Game Messages */}
+        <div className="text-center p-2 bg-gray-100 rounded">
+          <p className="font-medium">{message}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default FamilyGinRummy;
